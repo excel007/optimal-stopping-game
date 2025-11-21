@@ -10,7 +10,9 @@ const i18n = {
     title: 'Optimal Stopping Game',
     gameTitle: 'Optimal Stopping Algorithm',
     quote: '"The art of knowing when to stop looking and commit to a choice - a mathematical approach to life\'s biggest decisions."',
-    itemsLeft: 'Items Left',
+    ruleQuote: '"37% Rule (Look & Leap): Observe the first 37% without choosing, then pick the first option better than all you\'ve seen."',
+    itemsLeft: 'Passed',
+    best37: 'Best in first 37%',
     pass: 'Pass',
     pick: 'Pick',
     youWin: 'You Win! 🎉',
@@ -24,7 +26,9 @@ const i18n = {
     title: 'เกมหยุดที่เหมาะสม',
     gameTitle: 'อัลกอริทึมหยุดที่เหมาะสม',
     quote: '"ศิลปะของการรู้ว่าเมื่อไหร่ควรหยุดมองหาและตัดสินใจเลือก - แนวทางทางคณิตศาสตร์สำหรับการตัดสินใจที่สำคัญที่สุดในชีวิต"',
-    itemsLeft: 'เหลืออีก',
+    ruleQuote: '"กฎ 37% (Look & Leap): สังเกตตัวเลือกแรก 37% โดยไม่เลือก จากนั้นเลือกตัวเลือกแรกที่ดีกว่าทั้งหมดที่เคยเห็น"',
+    itemsLeft: 'ผ่านไปแล้ว',
+    best37: 'ค่าที่ดีที่สุดของ 37% แรก',
     pass: 'ผ่าน',
     pick: 'เลือก',
     youWin: 'คุณชนะ! 🎉',
@@ -85,9 +89,9 @@ function render() {
     ? Math.round(game.stats.totalOptimalityGap / game.stats.gamesPlayed)
     : 0;
 
-  const totalPasses = game.stats.history.reduce((sum, h) => sum + h.pickedIndex, 0);
-  const avgPasses = game.stats.gamesPlayed > 0
-    ? (totalPasses / game.stats.gamesPlayed).toFixed(1)
+  const totalPositions = game.stats.history.reduce((sum, h) => sum + (h.pickedIndex + 1), 0);
+  const avgPosition = game.stats.gamesPlayed > 0
+    ? (totalPositions / game.stats.gamesPlayed).toFixed(1)
     : 0;
 
   // History HTML
@@ -100,7 +104,7 @@ function render() {
         </span>
       </div>
       <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.85em; opacity: 0.7;">
-         <span>Passes: ${h.pickedIndex}</span>
+         <span>Pos: ${h.pickedIndex + 1}</span>
          <span>Gap: ${h.gap}</span>
       </div>
     </div>
@@ -119,13 +123,18 @@ function render() {
 
   const langBtnText = currentLang === 'en' ? '🇹🇭 TH' : '🇬🇧 EN';
 
+  // Calculate best value in first 37%
+  const lookPhase = Math.round(game.totalItems * 0.37);
+  const history = game.getHistoryValues();
+  const lookPhaseValues = history.slice(0, Math.min(lookPhase, game.currentIndex));
+  const best37Value = lookPhaseValues.length > 0 ? Math.max(...lookPhaseValues) : '-';
+
   app.innerHTML = `
     <div class="main-layout">
       <!-- Sidebar -->
       <aside class="sidebar">
         <div class="header-row">
           <h1>${t.title}</h1>
-          <button id="langBtn" class="lang-btn" title="Switch Language">${langBtnText}</button>
         </div>
 
         <div class="assistant-panel">
@@ -170,8 +179,8 @@ function render() {
             <span class="stat-value">${avgGap}</span>
           </div>
           <div class="stat-row">
-            <span>Avg. Passes:</span>
-            <span class="stat-value">${avgPasses}</span>
+            <span>Avg. Position:</span>
+            <span class="stat-value">${avgPosition}</span>
           </div>
           
           <div class="history-list">
@@ -182,13 +191,19 @@ function render() {
 
       <!-- Game Area -->
       <main class="game-area">
-        <h2 class="game-title">${t.gameTitle}</h2>
+        <h2 class="game-title">${t.gameTitle}
+        <button id="langBtn" class="lang-btn-center" title="Switch Language">${langBtnText}</button>
+        </h2>
         <blockquote class="game-quote">${t.quote}</blockquote>
+        <blockquote class="game-quote rule-quote">${t.ruleQuote}</blockquote>
         
         ${stepsHtml}
         
         <div class="stats">
-          ${t.itemsLeft}: ${game.totalItems - game.currentIndex} / ${game.totalItems}
+          ${t.itemsLeft}: ${game.currentIndex} / ${game.totalItems}
+        </div>
+        <div class="stats stats-best37">
+          ${t.best37}: <strong>${best37Value}</strong>
         </div>
 
         <div class="card-area">
