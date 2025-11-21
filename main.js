@@ -81,16 +81,24 @@ function render() {
     ? Math.round(game.stats.totalOptimalityGap / game.stats.gamesPlayed)
     : 0;
 
+  const totalPasses = game.stats.history.reduce((sum, h) => sum + h.pickedIndex, 0);
+  const avgPasses = game.stats.gamesPlayed > 0
+    ? (totalPasses / game.stats.gamesPlayed).toFixed(1)
+    : 0;
+
   // History HTML
   const historyHtml = game.stats.history.slice().reverse().map((h, i) => `
-    <div class="history-item">
-      <span>#${game.stats.gamesPlayed - i}</span>
-      <span class="${h.result === 'win' ? 'history-win' : 'history-lose'}">
-        ${h.result === 'win' ? 'WIN' : 'LOSE'}
-      </span>
-      <span style="font-size:0.8em; opacity:0.7">
-        (Gap: ${h.gap})
-      </span>
+    <div class="history-item" style="flex-direction: column; gap: 0.2rem;">
+      <div style="display: flex; justify-content: space-between; width: 100%;">
+        <span>#${game.stats.gamesPlayed - i}</span>
+        <span class="${h.result === 'win' ? 'history-win' : 'history-lose'}">
+          ${h.result === 'win' ? 'WIN' : 'LOSE'}
+        </span>
+      </div>
+      <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.85em; opacity: 0.7;">
+         <span>Passes: ${h.pickedIndex}</span>
+         <span>Gap: ${h.gap}</span>
+      </div>
     </div>
   `).join('');
 
@@ -133,6 +141,10 @@ function render() {
           <div class="stat-row" title="Lower is better">
             <span>Avg. Gap:</span>
             <span class="stat-value">${avgGap}</span>
+          </div>
+          <div class="stat-row">
+            <span>Avg. Passes:</span>
+            <span class="stat-value">${avgPasses}</span>
           </div>
           
           <div class="history-list">
