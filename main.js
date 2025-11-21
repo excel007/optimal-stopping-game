@@ -7,28 +7,32 @@ let game = new OptimalStoppingGame(10);
 // Simple Localization Dictionary
 const i18n = {
   en: {
-    title: "Find The Best(Biggest One) Choice with The 37% Rule",
-    current: "Current Item",
-    itemsLeft: "Items Left",
-    pass: "Pass",
-    pick: "Pick",
-    win: "You found the best diamond! 💎",
-    lose: "You missed the best one.",
-    bestWas: "The best value was",
-    yourValue: "You picked",
-    playAgain: "Play Again"
+    title: 'Optimal Stopping Game',
+    gameTitle: 'Optimal Stopping Algorithm',
+    quote: '"The art of knowing when to stop looking and commit to a choice - a mathematical approach to life\'s biggest decisions."',
+    itemsLeft: 'Items Left',
+    pass: 'Pass',
+    pick: 'Pick',
+    youWin: 'You Win! 🎉',
+    youLose: 'You Lose 😢',
+    youPicked: 'You picked',
+    bestWas: 'Best was',
+    pickedAt: 'Picked at position',
+    playAgain: 'Play Again'
   },
   th: {
-    title: "ค้นหาตัวเลือกที่ดีที่สุด (มากที่สุด) ด้วยกฎ 37%",
-    current: "ลำดับที่",
-    itemsLeft: "เหลืออีก",
-    pass: "ผ่าน",
-    pick: "เลือก",
-    win: "คุณเจอเพชรที่ดีที่สุด! 💎",
-    lose: "คุณพลาดเพชรที่ดีที่สุดไป",
-    bestWas: "ค่าที่ดีที่สุดคือ",
-    yourValue: "คุณเลือก",
-    playAgain: "เล่นอีกครั้ง"
+    title: 'เกมหยุดที่เหมาะสม',
+    gameTitle: 'อัลกอริทึมหยุดที่เหมาะสม',
+    quote: '"ศิลปะของการรู้ว่าเมื่อไหร่ควรหยุดมองหาและตัดสินใจเลือก - แนวทางทางคณิตศาสตร์สำหรับการตัดสินใจที่สำคัญที่สุดในชีวิต"',
+    itemsLeft: 'เหลืออีก',
+    pass: 'ผ่าน',
+    pick: 'เลือก',
+    youWin: 'คุณชนะ! 🎉',
+    youLose: 'คุณแพ้ 😢',
+    youPicked: 'คุณเลือก',
+    bestWas: 'ค่าที่ดีที่สุดคือ',
+    pickedAt: 'ลำดับที่เลือก',
+    playAgain: 'เล่นอีกครั้ง'
   }
 };
 
@@ -124,6 +128,29 @@ function render() {
           <button id="langBtn" class="lang-btn" title="Switch Language">${langBtnText}</button>
         </div>
 
+        <div class="assistant-panel">
+          <div class="assistant-title">🤖 AI Assistant</div>
+          ${showAssistant && !isGameOver ? `
+            <div>Strategy: <strong>37% Rule</strong></div>
+            <div class="recommendation">
+               Suggestion: <span class="${getRecommendation(game).action === 'pick' ? 'rec-pick' : 'rec-pass'}">
+                 ${getRecommendation(game).action === 'pick' ? t.pick : t.pass}
+               </span>
+               <div style="font-size: 0.8em; opacity: 0.8; margin-top:0.2em">(${getRecommendation(game).reason})</div>
+            </div>
+          ` : `
+            <div style="opacity: 0.7; font-size: 0.9em;">
+              ${isGameOver ? 'Game Over' : 'Enable to see suggestions'}
+            </div>
+          `}
+           <div class="toggle-container">
+            <label>
+              <input type="checkbox" id="assistantToggle" ${showAssistant ? 'checked' : ''}> 
+              ${currentLang === 'en' ? 'Enable' : 'เปิดใช้งาน'}
+            </label>
+          </div>
+        </div>
+
         <div class="stats-panel">
           <h3>📊 Statistics</h3>
           <div class="stat-row">
@@ -151,33 +178,13 @@ function render() {
             ${historyHtml}
           </div>
         </div>
-
-        <div class="assistant-panel">
-          <div class="assistant-title">🤖 AI Assistant</div>
-          ${showAssistant && !isGameOver ? `
-            <div>Strategy: <strong>37% Rule</strong></div>
-            <div class="recommendation">
-               Suggestion: <span class="${getRecommendation(game).action === 'pick' ? 'rec-pick' : 'rec-pass'}">
-                 ${getRecommendation(game).action === 'pick' ? t.pick : t.pass}
-               </span>
-               <div style="font-size: 0.8em; opacity: 0.8; margin-top:0.2em">(${getRecommendation(game).reason})</div>
-            </div>
-          ` : `
-            <div style="opacity: 0.7; font-size: 0.9em;">
-              ${isGameOver ? 'Game Over' : 'Enable to see suggestions'}
-            </div>
-          `}
-           <div class="toggle-container">
-            <label>
-              <input type="checkbox" id="assistantToggle" ${showAssistant ? 'checked' : ''}> 
-              ${currentLang === 'en' ? 'Enable' : 'เปิดใช้งาน'}
-            </label>
-          </div>
-        </div>
       </aside>
 
       <!-- Game Area -->
       <main class="game-area">
+        <h2 class="game-title">${t.gameTitle}</h2>
+        <blockquote class="game-quote">${t.quote}</blockquote>
+        
         ${stepsHtml}
         
         <div class="stats">
@@ -211,9 +218,10 @@ function renderResult(t) {
   return `
     <div class="result-overlay fade-in">
       <div class="result-box scale-up">
-        <h2>${game.result === 'win' ? t.win : t.lose}</h2>
-        <p>${t.yourValue}: <strong>${game.pickedValue || '-'}</strong></p>
+        <h2>${game.result === 'win' ? t.youWin : t.youLose}</h2>
+        <p>${t.youPicked}: <strong>${game.pickedValue || '-'}</strong></p>
         <p>${t.bestWas}: <strong>${game.bestValue}</strong></p>
+        <p>${t.pickedAt}: <strong>${game.currentIndex + 1}</strong></p>
         <button id="restartBtn">${t.playAgain}</button>
       </div>
     </div>
